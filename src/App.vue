@@ -10,13 +10,7 @@
 import NewResultForm from "./components/NewResultForm.vue";
 import Chart from "chart.js";
 import Players from "./components/Players.vue";
-
-const players = [
-  { color: "rgba(255, 99, 132, 0.2)", newPoints: 0, points: [7, 3], name: "Tobi", text: "I cha Chance Time ned!" },
-  { color: "rgba(54, 162, 235, 0.2)", newPoints: 0, points: [11, 4], name: "Michi", text: "Wer het iez de Donkey Kong gno?!" },
-  { color: "rgba(255, 206, 86, 0.2)", newPoints: 0, points: [9, 5], name: "Joni", text: "I glaub mis Grätli esch kabott!" },
-  { color: "rgba(75, 192, 192, 0.2)", newPoints: 0, points: [2, 3], name: "Römu", text: "Wer het s'letscht mol gonne?" },
-];
+import axios from "axios";
 
 export default {
   name: "App",
@@ -26,28 +20,37 @@ export default {
   },
   data() {
     return {
-      players: players,
+      players: [],
       showNewResultForm: false,
       chart1: null,
       chart2: null,
     };
   },
   methods: {
-    addPoints(newPoints) {
+    addPoints(ppp) {
+      console.log(ppp);
       const currentPoints = this.chart1.data.datasets[0].data;
 
       let i;
       for (i = 0; i < currentPoints.length; i++) {
-        currentPoints[i] += newPoints[i];
+        currentPoints[i] += ppp[i].newPoints;
         const currentSummed = this.chart2.data.datasets[i].data;
-        currentSummed.push(currentSummed[currentSummed.length - 1] + newPoints[i]);
+        currentSummed.push(currentSummed[currentSummed.length - 1] + ppp[i].newPoints);
       }
       this.chart2.data.labels.push(this.chart2.data.labels[this.chart2.data.labels.length - 1] + 1);
       this.chart1.update();
       this.chart2.update();
       this.showNewResultForm = !this.showNewResultForm;
-      this.players.forEach((p) => (p.newPoints = 0));
-      // store on DB TODO
+      this.players.forEach((p) => {
+        p.newPoints = 0;
+      });
+
+      axios
+        .post("https://n64-stars.herokuapp.com/api/player", ppp)
+        .then((res) => {
+          if (res.status !== 200) alert("something went wrong");
+        })
+        .catch((error) => alert(error));
     },
     getTimeSum(pts) {
       const summedPoints = [];
@@ -144,28 +147,23 @@ export default {
         },
       });
     },
-    // createChartTotalTime() {
-    //   var ctx = document.getElementById("chartTotalTime");
-
-    //   new Chart(ctx, {
-    //     type: "line",
-    //     data: {
-    //       labels: this.players.map((p) => p.name),
-    //       datasets: [
-    //         {
-    //           label: "Punkte",
-    //           data: this.players.map((p) => p.points),
-    //           backgroundColor: this.players.map((p) => p.color),
-    //         },
-    //       ],
-    //     },
-    //   });
-    // },
+    fetchPlayers() {
+      axios
+        .get("https://n64-stars.herokuapp.com/api/player")
+        .then((response) => {
+          console.log(response.data);
+          this.players = response.data;
+        })
+        .catch((error) => alert(error));
+    },
   },
   mounted() {
     Chart.defaults.global.defaultFontSize = 12;
-    this.createChartTotal();
-    this.createChartTotalTime();
+    this.fetchPlayers();
+    setTimeout(() => {
+      this.createChartTotal();
+      this.createChartTotalTime();
+    }, 1000);
   },
 };
 </script>

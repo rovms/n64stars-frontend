@@ -16,10 +16,14 @@ export default {
   },
   methods: {
     onSubmit() {
-      this.$emit(
-        "close",
-        this.players.map((p) => p.newPoints)
-      );
+      const pointsPerPlayer = [];
+      this.players.forEach((p) => {
+        pointsPerPlayer.push({
+          playerId: p._id,
+          newPoints: p.newPoints,
+        });
+      });
+      this.$emit("close", pointsPerPlayer);
     },
   },
 };
