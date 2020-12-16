@@ -1,5 +1,5 @@
 <template>
-  <button @click="showNewResultForm = !showNewResultForm">{{ showNewResultForm ? "Schliessen" : "Neue Resultate" }}</button>
+  <button class="button" @click="showNewResultForm = !showNewResultForm">{{ showNewResultForm ? "Schliessen" : "Neue Resultate" }}</button>
   <new-result-form @close="addPoints" :players="players" v-if="showNewResultForm" />
   <canvas id="chartTotal" width="200" height="200"></canvas>
   <canvas id="chartTotalTime" width="200" height="200"></canvas>
@@ -28,16 +28,15 @@ export default {
   },
   methods: {
     addPoints(ppp) {
-      console.log(ppp);
       const currentPoints = this.chart1.data.datasets[0].data;
 
       let i;
       for (i = 0; i < currentPoints.length; i++) {
-        currentPoints[i] += ppp[i].newPoints;
+        currentPoints[i] = parseInt(currentPoints[i], 10) + parseInt(ppp[i].newPoints, 10);
         const currentSummed = this.chart2.data.datasets[i].data;
-        currentSummed.push(currentSummed[currentSummed.length - 1] + ppp[i].newPoints);
+        currentSummed.push(parseInt(currentSummed[currentSummed.length - 1], 10) + parseInt(ppp[i].newPoints, 10));
       }
-      this.chart2.data.labels.push(this.chart2.data.labels[this.chart2.data.labels.length - 1] + 1);
+      this.chart2.data.labels.push(parseInt(this.chart2.data.labels[this.chart2.data.labels.length - 1]) + 1);
       this.chart1.update();
       this.chart2.update();
       this.showNewResultForm = !this.showNewResultForm;
@@ -67,6 +66,7 @@ export default {
 
       this.chart1 = new Chart(ctx, {
         type: "bar",
+
         data: {
           labels: this.players.map((p) => p.name),
           datasets: [
@@ -157,7 +157,7 @@ export default {
         .catch((error) => alert(error));
     },
   },
-  mounted() {
+  created() {
     Chart.defaults.global.defaultFontSize = 12;
     this.fetchPlayers();
     setTimeout(() => {
@@ -176,5 +176,11 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+#button {
+  background-color: white;
+  color: black;
+  border: 2px solid black;
 }
 </style>

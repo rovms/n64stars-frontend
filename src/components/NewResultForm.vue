@@ -4,7 +4,7 @@
       <label class="label" :for="player.name">{{ player.name }}</label>
       <input class="input" :name="player.name" :id="player.name" type="number" v-model="player.newPoints" />
     </div>
-    <button type="submit">Speichern</button>
+    <button class="button" type="submit">Speichern</button>
   </form>
 </template>
 
@@ -20,7 +20,7 @@ export default {
       this.players.forEach((p) => {
         pointsPerPlayer.push({
           playerId: p._id,
-          newPoints: p.newPoints,
+          newPoints: p.newPoints || 0,
         });
       });
       this.$emit("close", pointsPerPlayer);
