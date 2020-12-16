@@ -3,20 +3,17 @@
   <new-result-form @close="addPoints" :players="players" v-if="showNewResultForm" />
   <canvas id="chartTotal" width="200" height="200"></canvas>
   <canvas id="chartTotalTime" width="200" height="200"></canvas>
-  <players :players="players" />
 </template>
 
 <script>
 import NewResultForm from "./components/NewResultForm.vue";
 import Chart from "chart.js";
-import Players from "./components/Players.vue";
 import axios from "axios";
 
 export default {
   name: "App",
   components: {
     NewResultForm,
-    Players,
   },
   data() {
     return {
