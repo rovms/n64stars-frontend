@@ -1,8 +1,17 @@
 <template>
-  <button class="button" @click="showNewResultForm = !showNewResultForm">{{ showNewResultForm ? "Schliessen" : "Neue Resultate" }}</button>
-  <new-result-form @close="addPoints" :players="players" v-if="showNewResultForm" />
-  <canvas id="chartTotal" width="200" height="200"></canvas>
-  <canvas id="chartTotalTime" width="200" height="200"></canvas>
+  <div class="loading-container" v-if="loadingPage">
+    <div class="center-title">
+      <h1>Loading...</h1>
+    </div>
+  </div>
+  <div class="gaggi" v-if="!loadingPage">
+    <button v-if="!showNewResultForm" class="button nrbutton pulsate" @click="showNewResultForm = true">Neue Resultate</button>
+    <new-result-form class="nrform" @abort="showNewResultForm = false" @close="addPoints" :players="players" v-if="showNewResultForm" />
+    <div class="chart-container">
+      <canvas class="chart" id="chartTotalTime" width="200" height="200"></canvas>
+      <canvas class="chart" id="chartTotal" width="200" height="200"></canvas>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -17,6 +26,7 @@ export default {
   },
   data() {
     return {
+      loadingPage: true,
       players: [],
       showNewResultForm: false,
       chart1: null,
@@ -38,7 +48,7 @@ export default {
       this.chart2.update();
       this.showNewResultForm = !this.showNewResultForm;
       this.players.forEach((p) => {
-        p.newPoints = 0;
+        p.newPoints = null;
       });
 
       axios
@@ -61,23 +71,30 @@ export default {
     createChartTotal() {
       var ctx = document.getElementById("chartTotal");
 
+      let datasets = [];
+
+      this.players.forEach((p) => {
+        datasets.push({
+          label: p.name,
+          data: p.points,
+          backgroundColor: p.color,
+          borderColor: "rgb(0,0,0)",
+          borderWidth: 1,
+        });
+      });
+
       this.chart1 = new Chart(ctx, {
         type: "bar",
 
         data: {
-          labels: this.players.map((p) => p.name),
-          datasets: [
-            {
-              label: "Punkte",
-              data: this.players.map((p) => p.points.reduce((a, b) => a + b, 0)),
-              backgroundColor: this.players.map((p) => p.color),
-              borderColor: this.players.map((p) => p.color),
-              borderWidth: 1,
-            },
-          ],
+          datasets: datasets,
         },
         options: {
           responsive: true,
+          title: {
+            display: true,
+            text: "Total",
+          },
           scales: {
             yAxes: [
               {
@@ -114,7 +131,7 @@ export default {
           borderColor: p.color,
           data: summedPoints,
           fill: false,
-          lineTension: 0,
+          borderWidth: 1,
         };
 
         datasets.push(dataset);
@@ -122,11 +139,27 @@ export default {
 
       this.chart2 = new Chart(ctx, {
         type: "line",
+
         data: {
           labels: labels,
           datasets: datasets,
         },
         options: {
+          legend: {
+            labels: {
+              generateLabels: (chart) => {
+                return chart.data.datasets.map((ds, i) => {
+                  console.log(i);
+                  return {
+                    text: ds.label,
+                    fillStyle: ds.backgroundColor,
+                    strokeStyle: "rgb(0,0,0",
+                    lineWidth: 1,
+                  };
+                });
+              },
+            },
+          },
           responsive: true,
           title: {
             display: true,
@@ -151,11 +184,18 @@ export default {
           console.log(response.data);
           this.players = response.data;
         })
+        .then(() => {
+          setTimeout(() => {
+            this.loadingPage = false;
+          }, 500);
+        })
         .catch((error) => alert(error));
     },
   },
   created() {
     Chart.defaults.global.defaultFontSize = 12;
+    Chart.defaults.global.title.fontSize = 16;
+
     this.fetchPlayers();
     setTimeout(() => {
       this.createChartTotal();
@@ -164,20 +204,3 @@ export default {
   },
 };
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-
-#button {
-  background-color: white;
-  color: black;
-  border: 2px solid black;
-}
-</style>
