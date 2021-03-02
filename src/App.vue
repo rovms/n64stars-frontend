@@ -90,6 +90,11 @@ export default {
           datasets: datasets,
         },
         options: {
+          legend: {
+            onClick: function(e) {
+              e.stopPropagation();
+            },
+          },
           responsive: true,
           title: {
             display: true,
@@ -146,10 +151,12 @@ export default {
         },
         options: {
           legend: {
+            onClick: function(e) {
+              e.stopPropagation();
+            },
             labels: {
               generateLabels: (chart) => {
-                return chart.data.datasets.map((ds, i) => {
-                  console.log(i);
+                return chart.data.datasets.map((ds) => {
                   return {
                     text: ds.label,
                     fillStyle: ds.backgroundColor,
