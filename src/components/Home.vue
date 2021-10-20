@@ -32,7 +32,6 @@
 </template>
 
 <script>
-// import NewResultForm from "../components/NewResultForm.vue";
 import Chart from "chart.js";
 import axios from "axios";
 import router from "../router";
@@ -42,9 +41,6 @@ const API_URL = process.env.VUE_APP_BACKEND_BASE_URL;
 
 export default {
   name: "Home",
-  components: {
-    // NewResultForm,
-  },
 
   data() {
     return {
@@ -54,7 +50,6 @@ export default {
       chart1: null,
       chart2: null,
       password: "",
-      token: "",
     };
   },
   methods: {
@@ -121,14 +116,37 @@ export default {
         borderColors.push("rgb(0,0,0)");
       });
 
-      const dataset = { label: "", data, backgroundColor, borderColors, borderWidth: 1 };
+      let player;
+      const years = [];
+      for (player of this.players) {
+        let score;
+        for (score of player.scores) {
+          const year = new Date(score.date).getFullYear();
+          if (!years.includes(year)) {
+            years.push(year);
+          }
+          if (player[year]) {
+            player[year] += score.amount;
+          } else {
+            player[year] = score.amount;
+          }
+        }
+      }
+
+      let year;
+      const datasets = [];
+      for (year of years) {
+        const yearDataset = { label: year, backgroundColor: "rgb(10,10,10)", borderColors: "rgb(100,100,100)", borderWidth: 1 };
+        yearDataset["data"] = this.players.map((player) => player[year]);
+        datasets.push(yearDataset);
+      }
 
       this.chart1 = new Chart(ctx, {
         type: "bar",
 
         data: {
           labels: labels,
-          datasets: [dataset],
+          datasets: datasets,
         },
         options: {
           legend: {
@@ -143,6 +161,12 @@ export default {
             text: "Total",
           },
           scales: {
+            x: {
+              stacked: true,
+            },
+            y: {
+              stacked: true,
+            },
             yAxes: [
               {
                 ticks: {
@@ -243,6 +267,7 @@ export default {
           }, 50);
         })
         .catch((error) => {
+          console.log(error);
           if (error && error.response && error.response.status === 401) {
             setTimeout(() => {
               router.push({ name: "Login" });
@@ -253,10 +278,20 @@ export default {
 
     retrieveData() {
       this.fetchPlayers();
-      setTimeout(() => {
-        this.createChartTotal();
-        this.createChartTotalTime();
-      }, 1000);
+      const MAX_WAIT_TIMES = 10;
+      let waitedTimes = 0;
+      const interval = setInterval(() => {
+        if (this.isLoading) {
+          if (waitedTimes >= MAX_WAIT_TIMES) {
+            clearInterval(interval);
+          }
+          waitedTimes++;
+        } else {
+          this.createChartTotal();
+          this.createChartTotalTime();
+          clearInterval(interval);
+        }
+      }, 200);
     },
   },
 
