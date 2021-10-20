@@ -1,10 +1,21 @@
 <template>
   <form>
-    <button class="button nrbutton pulsate" @click="$emit('abort')">Abbrechen</button>
-    <button class="button sbutton pulsate" @click="onSubmit">Speichern</button>
-    <div class="container" v-for="player in players" :key="player.name">
-      <label class="label" :for="player.name">{{ player.name }}</label>
-      <input class="input" placeholder="..." :name="player.name" :id="player.name" type="number" v-model="player.newPoints" />
+    <button class="button primary" @abort="$emit('onAbort')" type="button">Abbrechen</button>
+    <!-- <button class="button success" @click="onSubmit">Speichern</button> -->
+    <button class="button success" @click="$emit('addPoints')">Speichern</button>
+    <div class="outer-container">
+      <table class="result-table">
+        <tr v-for="player in players" :key="player">
+          <td class="row-name">{{ player.name }}</td>
+          <td class="row-points" style="padding: 0.3rem">
+            <button class="round" type="button" @click="player.newPoints = player.newPoints <= 1 ? 0 : player.newPoints - 1">-</button>
+          </td>
+          <td class="row-points">
+            <div>{{ player.newPoints || 0 }}</div>
+          </td>
+          <td class="row-points"><button class="round" type="button" @click="player.newPoints++">+</button></td>
+        </tr>
+      </table>
     </div>
   </form>
 </template>
@@ -15,32 +26,44 @@ export default {
   props: {
     players: Array,
   },
-  methods: {
-    onSubmit(evt) {
-      evt.preventDefault();
-      const pointsPerPlayer = [];
+  emits: ["addPoints"],
 
+  metdods: {
+    hello() {
+      console.log("sdfkjhdsf");
+    },
+
+    onSubmit(evt) {
+      console.log("hello");
+      console.log(evt);
+      // evt.preventDefault();
+      const pointsPerPlayer = [];
       this.players.forEach((p) => {
         pointsPerPlayer.push({
           playerId: p._id,
           newPoints: p.newPoints || 0,
         });
       });
-      this.$emit("close", pointsPerPlayer);
+      console.log(pointsPerPlayer);
+      this.$parent.addPoints(pointsPerPlayer);
+    },
+
+    waaaaa() {
+      console.log("waaa");
     },
   },
 };
 </script>
 
 <style scoped>
-.container {
+.outer-container {
   display: flex;
-  /* justify-content: center; */
-  justify-content: space-between;
-  margin-right: 7rem;
-  margin-left: 7rem;
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
+  justify-content: space-evenly;
+}
+
+.inner-container {
+  display: flex;
+  margin: 3px;
 }
 
 .label {
@@ -50,7 +73,7 @@ export default {
 .input {
   font-family: supermario;
   text-align: center;
-  max-width: 50px;
+  max-widtd: 50px;
   -webkit-text-stroke: 0px black;
   border-radius: 4px;
 }
