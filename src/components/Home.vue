@@ -39,6 +39,16 @@ import authHeader from "../auth";
 
 const API_URL = process.env.VUE_APP_BACKEND_BASE_URL;
 
+const CHART_COLORS = [
+  "rgba(255, 153, 51, 0.6)",
+  "rgba(153, 51, 255, 0.6)",
+  "rgba(51, 255, 153, 0.6)",
+  "rgba(153, 51, 255, 0.6)",
+  "rgba(204, 204, 0, 0.6)",
+  "rgba(0, 204, 204, 0.6)",
+  "rgba(204, 0, 204, 0.6)",
+];
+
 export default {
   name: "Home",
 
@@ -47,8 +57,8 @@ export default {
       isLoading: true,
       players: [],
       showNewResultForm: false,
-      chart1: null,
-      chart2: null,
+      totalPerYearChart: null,
+      allTimeDevelopmentChart: null,
       password: "",
     };
   },
@@ -59,19 +69,18 @@ export default {
     },
 
     submitPoints() {
-      for (let p of this.players) {
-        console.log(p.newPoints);
-      }
-      const currentPoints = this.chart1.data.datasets[0].data;
+      const currentPoints = this.totalPerYearChart.data.datasets[0].data;
       let i;
       for (i = 0; i < currentPoints.length; i++) {
         currentPoints[i] = parseInt(currentPoints[i], 10) + parseInt(this.players[i].newPoints, 10);
-        const currentSummed = this.chart2.data.datasets[i].data;
+        const currentSummed = this.allTimeDevelopmentChart.data.datasets[i].data;
         currentSummed.push(parseInt(currentSummed[currentSummed.length - 1], 10) + parseInt(this.players[i].newPoints, 10));
       }
-      this.chart2.data.labels.push(parseInt(this.chart2.data.labels[this.chart2.data.labels.length - 1]) + 1);
-      this.chart1.update();
-      this.chart2.update();
+      this.allTimeDevelopmentChart.data.labels.push(
+        parseInt(this.allTimeDevelopmentChart.data.labels[this.allTimeDevelopmentChart.data.labels.length - 1]) + 1
+      );
+      this.totalPerYearChart.update();
+      this.allTimeDevelopmentChart.update();
       this.showNewResultForm = !this.showNewResultForm;
       this.players.forEach((p) => {
         p.newPoints = null;
@@ -133,15 +142,20 @@ export default {
         }
       }
 
-      let year;
       const datasets = [];
-      for (year of years) {
-        const yearDataset = { label: year, backgroundColor: "rgb(10,10,10)", borderColors: "rgb(100,100,100)", borderWidth: 1 };
-        yearDataset["data"] = this.players.map((player) => player[year]);
+      for (let i = 0; i < years.length; i++) {
+        const yearDataset = { label: years[i], backgroundColor: CHART_COLORS[i], borderColors: "rgb(0, 0, 0)", borderWidth: 1 };
+        yearDataset["data"] = this.players.map((player) => player[years[i]]);
         datasets.push(yearDataset);
       }
 
-      this.chart1 = new Chart(ctx, {
+      datasets.sort((d1, d2) => {
+        if (d1.label < d2.label) return -1;
+        if (d1.label > d2.label) return 1;
+        return 0;
+      });
+
+      this.totalPerYearChart = new Chart(ctx, {
         type: "bar",
 
         data: {
@@ -149,29 +163,23 @@ export default {
           datasets: datasets,
         },
         options: {
-          legend: {
-            onClick: function (e) {
-              e.stopPropagation();
-            },
-            display: false,
-          },
           responsive: true,
           title: {
             display: true,
             text: "Total",
           },
           scales: {
-            x: {
-              stacked: true,
-            },
-            y: {
-              stacked: true,
-            },
+            xAxes: [
+              {
+                stacked: true,
+              },
+            ],
             yAxes: [
               {
                 ticks: {
                   beginAtZero: true,
                 },
+                stacked: true,
               },
             ],
           },
@@ -209,7 +217,7 @@ export default {
         datasets.push(dataset);
       });
 
-      this.chart2 = new Chart(ctx, {
+      this.allTimeDevelopmentChart = new Chart(ctx, {
         type: "line",
 
         data: {
@@ -227,7 +235,7 @@ export default {
                   return {
                     text: ds.label,
                     fillStyle: ds.backgroundColor,
-                    strokeStyle: "rgb(0,0,0",
+                    strokeStyle: "rgb(0,0,0)",
                     lineWidth: 1,
                   };
                 });
