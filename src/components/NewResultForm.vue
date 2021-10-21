@@ -70,14 +70,6 @@ export default {
   margin-right: 5px;
 }
 
-.input {
-  font-family: supermario;
-  text-align: center;
-  max-widtd: 50px;
-  -webkit-text-stroke: 0px black;
-  border-radius: 4px;
-}
-
 .sbutton {
   margin-top: 10px;
   color: greenyellow;

@@ -2,7 +2,7 @@
   <div class="container">
     <div v-if="isLoading">Auf Server warten...</div>
     <div v-if="!isLoading">
-      <button v-if="!showNewResultForm" class="button primary" @add-points="submitPoints" @abort="closeNewPointsForm" @click="showNewResultForm = true">
+      <button v-if="!showNewResultForm" class="button primary results" @add-points="submitPoints" @abort="closeNewPointsForm" @click="showNewResultForm = true">
         Resultate erfassen
       </button>
       <form v-if="showNewResultForm">

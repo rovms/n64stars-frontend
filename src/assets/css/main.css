@@ -102,6 +102,16 @@ body,
   border-radius: 7px;
 }
 
+.button {
+  font-family: Mario-Party-Hudson-Font;
+  padding: 3px;
+  padding-left: 9px;
+  padding-right: 9px;
+  font-size: x-large;
+  border-radius: 12px;
+  margin: 4px;
+}
+
 .primary {
   color: #4ba3c7;
   background-color: #b3e5fc;
@@ -114,8 +124,14 @@ body,
   border: 2px solid #4f9a94;
 }
 
+
+
 .round {
   border-radius: 50%;
+}
+
+.round:hover {
+cursor: pointer;
 }
 
 .primary:hover {
@@ -126,15 +142,6 @@ body,
 .success:hover {
   cursor: pointer;
   background-color: #e5ffff;
-}
-
-.yellow-input {
-  border: 2px solid black;
-  color: white;
-  background-color: #00bcd4;
-  border-color: white;
-  font-size: x-large;
-  text-align: center;
 }
 
 .loading-container {
@@ -162,50 +169,17 @@ body,
   justify-content: center;
   align-content: space-between;
   flex-wrap: wrap;
-}
-
-.center-title {
-  flex: 1 1 auto;
+  margin-top: 1rem;
 }
 
 .chart {
   padding: 20px;
   max-width: 400px;
+  border: 2px solid #4ba3c720;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  border-radius: 5px;
 }
 
-.nrform {
-  margin-bottom: 2rem;
-}
-
-.blue {
-  background-color: rgb(204, 229, 255);
-  color: cornflowerblue;
-}
-
-.yellow {
-  background-color: rgba(235, 231, 18, 0.329);
-  color: yellow;
-}
-
-.button {
-  font-family: Mario-Party-Hudson-Font;
-  padding: 3px;
-  padding-left: 9px;
-  padding-right: 9px;
-  font-size: x-large;
-  border-radius: 12px;
-  margin: 4px;
-}
-
-.input {
-  border: 1px solid black;
-  color: red;
-  background-color: #ffcccc;
-  border-color: #ff3333;
-  font-family: Mario-Party-Hudson-Font;
-}
-
-.nrbutton {
-  margin-bottom: 10px;
-  border-color: #0000cc;
+.chart:hover {
+  background-color: #efffff;
 }
