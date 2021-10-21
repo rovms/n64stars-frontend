@@ -24,8 +24,8 @@
         </div>
       </form>
       <div class="chart-container">
-        <canvas class="chart" ref="chartTotalTime" width="200" height="200"></canvas>
-        <canvas class="chart" ref="chartTotal" width="200" height="200"></canvas>
+        <canvas class="chart" ref="allTimeDevelopmentChart" width="200" height="200"></canvas>
+        <canvas class="chart" ref="totalPerYearChart" width="200" height="200"></canvas>
       </div>
     </div>
   </div>
@@ -69,10 +69,26 @@ export default {
     },
 
     submitPoints() {
-      const currentPoints = this.totalPerYearChart.data.datasets[0].data;
+      const thisYear = new Date().getFullYear();
+      const totalPerYearDatasets = this.totalPerYearChart.data.datasets;
+      const _pointsThisYear = totalPerYearDatasets.find((ds) => ds.label == thisYear);
+      if (_pointsThisYear == null) {
+        const nrOfPreviousYears = totalPerYearDatasets.length;
+        const newYearDataset = this.createNewYearDataset(thisYear, CHART_COLORS[nrOfPreviousYears]);
+        newYearDataset["data"] = this.players.map((player) => player.newPoints);
+        totalPerYearDatasets.push(newYearDataset);
+      } else {
+        const thisYearData = { ..._pointsThisYear };
+        for (let i = 0; i < thisYearData.data.length; i++) {
+          thisYearData.data[i] += this.players[i].newPoints;
+        }
+      }
+
       let i;
-      for (i = 0; i < currentPoints.length; i++) {
-        currentPoints[i] = parseInt(currentPoints[i], 10) + parseInt(this.players[i].newPoints, 10);
+      for (i = 0; i < this.players.length; i++) {
+        //TODO: line missing?
+        // currentPoints[i] = parseInt(currentPoints[i], 10) + parseInt(this.players[i].newPoints, 10);
+
         const currentSummed = this.allTimeDevelopmentChart.data.datasets[i].data;
         currentSummed.push(parseInt(currentSummed[currentSummed.length - 1], 10) + parseInt(this.players[i].newPoints, 10));
       }
@@ -82,14 +98,14 @@ export default {
       this.totalPerYearChart.update();
       this.allTimeDevelopmentChart.update();
       this.showNewResultForm = !this.showNewResultForm;
-      this.players.forEach((p) => {
-        p.newPoints = null;
-      });
 
       axios
         .post(API_URL + "player", this.players, authHeader())
-        .then((res) => {
-          if (res.status !== 200) alert("something went wrong");
+        .then(() => {
+          console.log("Players updated.");
+          this.players.forEach((p) => {
+            p.newPoints = 0;
+          });
         })
         .catch((error) => {
           if (error && error.response) {
@@ -97,7 +113,7 @@ export default {
               router.go({ name: "Login" });
             }
           }
-          alert(error);
+          console.log(error);
         });
     },
 
@@ -112,8 +128,8 @@ export default {
       return sum;
     },
 
-    createChartTotal() {
-      const ctx = this.$refs.chartTotal;
+    createtotalPerYearChart() {
+      const ctx = this.$refs.totalPerYearChart;
       const labels = [];
       const data = [];
       const backgroundColor = [];
@@ -144,7 +160,7 @@ export default {
 
       const datasets = [];
       for (let i = 0; i < years.length; i++) {
-        const yearDataset = { label: years[i], backgroundColor: CHART_COLORS[i], borderColors: "rgb(0, 0, 0)", borderWidth: 1 };
+        const yearDataset = this.createNewYearDataset(years[i], CHART_COLORS[i]);
         yearDataset["data"] = this.players.map((player) => player[years[i]]);
         datasets.push(yearDataset);
       }
@@ -187,8 +203,8 @@ export default {
       });
     },
 
-    createChartTotalTime() {
-      const ctx = this.$refs.chartTotalTime;
+    createallTimeDevelopmentChart() {
+      const ctx = this.$refs.allTimeDevelopmentChart;
       const datasets = [];
       let counter;
       const length = this.players[0].points.length;
@@ -260,6 +276,10 @@ export default {
       });
     },
 
+    createNewYearDataset(label, backgroundColor) {
+      return { label, backgroundColor, borderColors: "rgb(0, 0, 0)", borderWidth: 1 };
+    },
+
     fetchPlayers() {
       axios
         .get(API_URL + "player", authHeader())
@@ -295,8 +315,8 @@ export default {
           }
           waitedTimes++;
         } else {
-          this.createChartTotal();
-          this.createChartTotalTime();
+          this.createtotalPerYearChart();
+          this.createallTimeDevelopmentChart();
           clearInterval(interval);
         }
       }, 200);
