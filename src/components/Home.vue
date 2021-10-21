@@ -1,9 +1,9 @@
 <template>
   <div class="container">
-    <div v-if="isLoading">Auf Server warten...</div>
+    <div v-if="isLoading">AUF SERVER WARTEN . . .</div>
     <div v-if="!isLoading">
       <button v-if="!showNewResultForm" class="button primary results" @add-points="submitPoints" @abort="closeNewPointsForm" @click="showNewResultForm = true">
-        Resultate erfassen
+        RESULTATE &nbsp; ERFASSEN
       </button>
       <form v-if="showNewResultForm">
         <button class="button primary" @click="closeNewPointsForm()" type="button">Abbrechen</button>
@@ -117,32 +117,16 @@ export default {
         });
     },
 
-    getTimeSum(pts) {
-      const summedPoints = [];
-      let sum = 0;
-      let pt;
-      for (pt of pts) {
-        sum = sum + pt;
-        summedPoints.push(sum);
-      }
-      return sum;
-    },
-
     createtotalPerYearChart() {
       const ctx = this.$refs.totalPerYearChart;
       const labels = [];
-      const data = [];
-      const backgroundColor = [];
-      const borderColors = [];
+      
       this.players.forEach((p) => {
         labels.push(p.name);
-        data.push(p.points.reduce((p1, p2) => p1 + p2, 0));
-        backgroundColor.push(p.color);
-        borderColors.push("rgb(0,0,0)");
       });
 
-      let player;
       const years = [];
+      let player;
       for (player of this.players) {
         let score;
         for (score of player.scores) {
@@ -207,17 +191,19 @@ export default {
       const ctx = this.$refs.allTimeDevelopmentChart;
       const datasets = [];
       let counter;
-      const length = this.players[0].points.length;
+      const length = this.players[0].points.length; // assuming that all players have the same amount of scores.
+      
       const labels = [];
       for (counter = 1; counter <= length; counter++) {
         labels.push(counter);
       }
+      
       this.players.forEach((p) => {
         const summedPoints = [];
         let sum = 0;
-        let pt;
-        for (pt of p.points) {
-          sum = sum + pt;
+        let score;
+        for (score of p.scores) {
+          sum = sum + score.amount;
           summedPoints.push(sum);
         }
 
